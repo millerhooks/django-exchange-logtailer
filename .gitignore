@@ -4,3 +4,4 @@
 .idea/
 dist/
 build/
+django_logtailer.egg-info
