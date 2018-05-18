@@ -31,28 +31,6 @@ TIMER = getattr(settings, 'LOGTAILER_LOGGING_TIMER',
                 os.path.join(tempfile.gettempdir(), "logtailer-timer"))
 
 
-def log_directory():
-    log_dir = getattr(settings, 'LOGTAILER_LOG_DIR', '/var/log/logtailer')
-    if not os.path.exists(log_dir):
-        try:
-            os.mkdir(log_dir)
-        except OSError:
-            log_dir = os.path.join(tempfile.gettempdir(), 'logtailer')
-            if not os.path.exists(log_dir):
-                os.mkdir(log_dir)
-    return log_dir
-
-
-def log_file():
-    return getattr(settings, 'LOGTAILER_LOG_FILE',
-                   os.path.join(log_directory(), "logtailer.log"))
-
-
-def log_file_extensions():
-    return getattr(settings, 'LOGTAILER_LOG_FILE_EXTENSIONS',
-                   ".*\.(txt|TXT|log|LOG)$")
-
-
 def file_writable(a_file):
     return all([
         os.path.exists(a_file),
@@ -67,6 +45,36 @@ def file_readable(a_file):
         os.path.isfile(a_file),
         os.access(a_file, os.R_OK)
     ])
+
+
+def dir_writable(a_dir):
+    return all([
+        os.path.exists(a_dir),
+        os.path.isdir(a_dir),
+        os.access(a_dir, os.W_OK | os.X_OK)
+    ])
+
+
+def log_directory():
+    log_dir = getattr(settings, 'LOGTAILER_LOG_DIR', '/var/log/logtailer')
+    if not os.path.exists(log_dir):
+        try:
+            os.makedirs(log_dir, 0o0755)
+        except OSError:
+            log_dir = tempfile.mkdtemp()
+    elif not dir_writable(log_dir):
+        log_dir = tempfile.mkdtemp()
+    return log_dir
+
+
+def log_file():
+    return getattr(settings, 'LOGTAILER_LOG_FILE',
+                   os.path.join(log_directory(), "logtailer.log"))
+
+
+def log_file_extensions():
+    return getattr(settings, 'LOGTAILER_LOG_FILE_EXTENSIONS',
+                   ".*\.(txt|TXT|log|LOG)$")
 
 
 def logging_timer_exists():
