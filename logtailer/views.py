@@ -7,6 +7,7 @@ from logtailer.models import LogsClipboard, LogFile
 from django.utils.translation import ugettext as _
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.admin.views.decorators import staff_member_required
+from django.utils.html import escape
 
 from django.conf import settings
 
@@ -58,7 +59,9 @@ def get_log_lines(request, file_id, history=False):
 
     if history:
         content = get_history(file)
-        content = [line.replace('\n','<br/>') for line in content]
+        content = [escape(line)
+                   .replace('\t', '  ').replace('  ', '&nbsp;&nbsp;')
+                   .replace('\n', '<br/>') for line in content]
     else:
         last_position = request.session.get('file_position_%s' % file_id)
         file.seek(0, os.SEEK_END)
@@ -66,7 +69,9 @@ def get_log_lines(request, file_id, history=False):
             file.seek(last_position)
 
         for line in file:
-            content.append('%s' % line.replace('\n','<br/>'))
+            content.append('%s' % escape(line)
+                           .replace('\t', '  ').replace('  ', '&nbsp;&nbsp;')
+                           .replace('\n', '<br/>'))
 
     request.session['file_position_%s' % file_id] = file.tell()
     file.close()
