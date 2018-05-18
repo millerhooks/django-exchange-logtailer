@@ -3,14 +3,41 @@
   {{ block.super }}
   {% if change %}
   <script type="text/javascript">
-    LOGTAILER_URL_GETLOGLINE = '{% url "logtailer_get_log_lines" original.pk %}';
-    LOGTAILER_URL_GETHISTORY = '{% url "logtailer_get_history" original.pk %}';
+	LOGTAILER_URL_GETLOGLINE = '{% url "logtailer_get_log_lines" original.pk %}';
+	LOGTAILER_URL_GETHISTORY = '{% url "logtailer_get_history" original.pk %}';
   </script>
   {% endif %}
 {% endblock extrahead %}
 {% block object-tools %}
+	{% if change %}{% if not is_popup %}
+	<p>
+	{% if log_enabled %}
+	<form action="{% url 'admin:disable_log' %}" method="GET" style="display:inline">
+		{% csrf_token %}
+		<input type="submit" style="background:#FF7F50" value="Disable Logging" />
+	</form>
+	{% else %}
+	<form action="{% url 'admin:enable_log' %}" method="GET" style="display:inline">
+		{% csrf_token %}
+		<input type="submit" style="background:#3CB371" value="Enable Logging" />
+	</form>
+	{% endif %}
+	<form action="{% url 'admin:export_log' %}" method="GET" style="display:inline;padding-left:20px">
+		{% csrf_token %}
+		<input type="submit" value="Export Log" />
+	</form>
+	<form action="{% url 'admin:clear_log' %}" method="GET" style="display:inline">
+		{% csrf_token %}
+		<input type="submit" value="Clear Log" />
+	</form>
+	<form action="" method="GET" style="display:inline">
+		{% csrf_token %}
+		<input type="submit" class="btn btn-primary" value="Reload Reader" onClick="window.location.reload()" />
+	</form>
+	</p>
+	{% endif %}{% endif %}
 	{{block.super}}
-    {% if change %}{% if not is_popup %}
+	{% if change %}{% if not is_popup %}
 		{% include "logtailer/log_reader.html" with logfile_id=original.pk %}
 	{% endif %}{% endif %}
 {% endblock %}

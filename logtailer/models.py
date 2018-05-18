@@ -1,11 +1,20 @@
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
+from logtailer.fields import DynamicFilePathField
+from logtailer.utils import log_directory, log_file_extensions
+
 
 class LogFile(models.Model):
     name = models.CharField(_('name'), max_length=180)
-    path = models.CharField(_('path'), max_length=500)
-    
+    path = DynamicFilePathField(
+        _('path'),
+        path=log_directory,
+        match=log_file_extensions(),
+        max_length=500,
+        blank=True,
+    )
+
     def __unicode__(self):
         return '%s' % self.name
     
