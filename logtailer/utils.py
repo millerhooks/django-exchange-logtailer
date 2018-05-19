@@ -26,11 +26,6 @@ from datetime import datetime, timedelta
 from django.conf import settings
 
 
-TIMEOUT = getattr(settings, 'LOGTAILER_TIMEOUT', 600)
-TIMER = getattr(settings, 'LOGTAILER_LOGGING_TIMER',
-                os.path.join(tempfile.gettempdir(), "logtailer-timer"))
-
-
 def file_writable(a_file):
     return all([
         os.path.exists(a_file),
@@ -77,19 +72,28 @@ def log_file_extensions():
                    ".*\.(txt|TXT|log|LOG)$")
 
 
+def logging_timer():
+    return getattr(settings, 'LOGTAILER_LOGGING_TIMER',
+                   os.path.join(tempfile.gettempdir(), "logtailer-timer"))
+
+
 def logging_timer_exists():
-    return file_writable(TIMER)
+    return file_writable(logging_timer())
 
 
 def set_logging_timer():
     # 'touch' logging file
-    with open(TIMER, 'a'):
-        os.utime(TIMER, None)
+    with open(logging_timer(), 'a'):
+        os.utime(logging_timer(), None)
 
 
 def remove_logging_timer():
     if logging_timer_exists():
-        os.remove(TIMER)
+        os.remove(logging_timer())
+
+
+def logging_timeout():
+    return getattr(settings, 'LOGTAILER_TIMEOUT', 600)
 
 
 def logging_timer_expired():
@@ -97,5 +101,6 @@ def logging_timer_expired():
         return True
     # Note: this is not timezone aware, but really doesn't need to be
     mtime = datetime.fromtimestamp(
-        os.path.getmtime(TIMER)) + timedelta(seconds=TIMEOUT)
+        os.path.getmtime(logging_timer())) + \
+        timedelta(seconds=logging_timeout())
     return datetime.now() > mtime
