@@ -62,9 +62,13 @@ def log_directory():
     return log_dir
 
 
+def log_name():
+    return getattr(settings, 'LOGTAILER_LOG_NAME', 'logtailer.log')
+
+
 def log_file():
     return getattr(settings, 'LOGTAILER_LOG_FILE',
-                   os.path.join(log_directory(), "logtailer.log"))
+                   os.path.join(log_directory(), log_name()))
 
 
 def log_file_extensions():
