@@ -19,7 +19,7 @@ from logtailer.utils import (
     set_logging_timer,
     log_file,
     file_readable,
-    logging_timer_exists,
+    file_writable,
 )
 
 HISTORY_LINES = getattr(settings, 'LOGTAILER_HISTORY_LINES', 0)
@@ -132,35 +132,63 @@ def disable_log(request):
 
 @staff_member_required
 def clear_log(request):
-    if logging_timer_exists():
-        with open(log_file(), 'w') as f:
-            f.write('')
-        messages.info(
-            request,
-            "Log cleared."
-        )
-    else:
+    if 'log_id' not in request.POST:
+        return HttpResponseRedirect(request.META['HTTP_REFERER'])
+
+    try:
+        logfile = LogFile.objects.get(id=int(request.POST['log_id']))
+        file_path = logfile.path
+        if file_writable(file_path):
+            with open(file_path, 'w') as f:
+                f.write('')
+            messages.info(
+                request,
+                "Log cleared."
+            )
+        else:
+            messages.warning(
+                request,
+                "Log file not writable."
+            )
+    except LogFile.DoesNotExist:
         messages.warning(
             request,
-            "Log file not writable."
+            "Log file database record not found."
         )
+
     return HttpResponseRedirect(request.META['HTTP_REFERER'])
 
 
 @staff_member_required
 def export_log(request):
-    if file_readable(log_file()):
-        tstamp = datetime.now().strftime('%Y%m%d-%H%M%S')
-        name, ext = os.path.splitext(os.path.basename(log_file()))
-        with open(log_file(), 'r') as f:
-            response = HttpResponse(
-                f.read(), content_type='text/plain', charset='utf-8')
-        response['Content-Disposition'] = \
-            'attachment; filename={0}_{1}.{2}'.format(name, tstamp, ext)
-        return response
-    else:
+    if 'log_id' not in request.POST:
+        return HttpResponseRedirect(request.META['HTTP_REFERER'])
+
+    try:
+        logfile = LogFile.objects.get(id=int(request.POST['log_id']))
+        file_path = logfile.path
+        if file_readable(file_path):
+            tstamp = datetime.now().strftime('%Y%m%d-%H%M%S')
+            name, ext = os.path.splitext(os.path.basename(file_path))
+            if ext.endswith('log'):
+                f_name = '{0}_{1}{2}'.format(name, tstamp, ext)
+            else:
+                f_name = '{0}{1}'.format(name, ext)
+            with open(file_path, 'r') as f:
+                response = HttpResponse(
+                    f.read(), content_type='text/plain', charset='utf-8')
+            response['Content-Disposition'] = \
+                'attachment; filename={0}'.format(f_name)
+            return response
+        else:
+            messages.warning(
+                request,
+                "Log file not readable."
+            )
+    except LogFile.DoesNotExist:
         messages.warning(
             request,
-            "Log file not readable."
+            "Log file database record not found."
         )
-        return HttpResponseRedirect(request.META['HTTP_REFERER'])
+
+    return HttpResponseRedirect(request.META['HTTP_REFERER'])

@@ -4,7 +4,7 @@ from django.conf import settings
 
 from logtailer.models import LogFile, Filter, LogsClipboard
 from logtailer.views import enable_log, disable_log, clear_log, export_log
-from logtailer.utils import logging_timer_expired, logging_timeout
+from logtailer.utils import logging_timer_expired, logging_timeout, log_file
 
 
 class LogFileAdmin(admin.ModelAdmin):
@@ -23,6 +23,7 @@ class LogFileAdmin(admin.ModelAdmin):
         extra_context = extra_context or {}
         extra_context['log_enabled'] = not logging_timer_expired()
         extra_context['log_timeout'] = int(logging_timeout()) / 60
+        extra_context['log_file'] = log_file()
         return super(LogFileAdmin, self).change_view(
             request, object_id, form_url=form_url, extra_context=extra_context)
 

@@ -11,27 +11,36 @@
 {% block object-tools %}
 	{% if change %}{% if not is_popup %}
 	<p>
-		{% if log_enabled %}
-		<form action="{% url 'admin:disable_log' %}" method="GET" style="display:inline">
-			{% csrf_token %}
-			<input type="submit" style="background:#FF7F50" value="Disable Logging" />
-		</form>
+		{% if log_file == original.path %}
+			{% if log_enabled %}
+			<form action="{% url 'admin:disable_log' %}" method="POST" style="display:inline">
+				{% csrf_token %}
+				<input type="submit" style="background:#FF7F50" value="Disable Logging" />
+			</form>
+			{% else %}
+			<form action="{% url 'admin:enable_log' %}" method="POST" style="display:inline">
+				{% csrf_token %}
+				<input type="submit" style="background:#3CB371" value="Enable Logging" />
+			</form>
+			{% endif %}
 		{% else %}
-		<form action="{% url 'admin:enable_log' %}" method="GET" style="display:inline">
-			{% csrf_token %}
-			<input type="submit" style="background:#3CB371" value="Enable Logging" />
-		</form>
+			<form action="" method="GET" style="display:inline">
+				<input type="button" style="background:#ae3522" value="READ-ONLY LOG FILE" />
+			</form>
 		{% endif %}
-		<form action="{% url 'admin:export_log' %}" method="GET" style="display:inline;padding-left:20px">
+		<form action="{% url 'admin:export_log' %}" method="POST" style="display:inline;padding-left:20px">
 			{% csrf_token %}
+			<input  type="hidden" name="log_id" value="{{original.pk}}"/>
 			<input type="submit" value="Export Log" />
 		</form>
-		<form action="{% url 'admin:clear_log' %}" method="GET" style="display:inline">
+		{% if log_file == original.path %}
+		<form action="{% url 'admin:clear_log' %}" method="POST" style="display:inline">
 			{% csrf_token %}
+			<input  type="hidden" name="log_id" value="{{original.pk}}"/>
 			<input type="submit" value="Clear Log" />
 		</form>
+		{% endif %}
 		<form action="" method="GET" style="display:inline">
-			{% csrf_token %}
 			<input type="submit" class="btn btn-primary" value="Reload Reader" onClick="window.location.reload()" />
 		</form>
 	</p>
