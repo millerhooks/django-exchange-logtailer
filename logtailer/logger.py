@@ -18,6 +18,8 @@
 #
 #########################################################################
 
+import os
+
 from logging.handlers import TimedRotatingFileHandler
 
 from logtailer.utils import logging_timer_expired, log_file
@@ -40,8 +42,8 @@ class LogTailerHandler(TimedRotatingFileHandler, object):
                  when='midnight', interval=1,
                  backupCount=3, encoding='utf-8',
                  delay=False, utc=False,
-                 app=None):
-        self.app = app
+                 appcallback=None):
+        self.app_callback = appcallback
         super(LogTailerHandler, self).__init__(
             filename,
             when=when, interval=interval,
@@ -54,8 +56,10 @@ class LogTailerHandler(TimedRotatingFileHandler, object):
         :type record: logging.LogRecord
         """
 
-        if self.app is not None:
-            record.__dict__.update(app=self.app)
+        # Get name of current app, e.g. possibly running under a worker, like
+        # celery, rather than normal WSGI, etc.
+        app = self.app_callback() if callable(self.app_callback) else 'app'
+        record.__dict__.update(app=app)
 
         # Check elapse timer; log if still active
         if not logging_timer_expired():
