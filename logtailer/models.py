@@ -10,7 +10,7 @@ class LogFile(models.Model):
     path = DynamicFilePathField(
         _('path'),
         path=log_directory,
-        match=log_file_extensions(),
+        match=log_file_extensions,
         max_length=500,
         blank=True,
     )

@@ -38,6 +38,8 @@ class DynamicFilePathField(models.FilePathField):
         super(DynamicFilePathField, self).__init__(*args, **kwargs)
         if callable(self.path):
             self.pathfunc, self.path = self.path, self.path()
+        if callable(self.match):
+            self.matchfunc, self.match = self.match, self.match()
 
     def get_prep_value(self, value):
         value = super(DynamicFilePathField, self).get_prep_value(value)
@@ -62,6 +64,8 @@ class DynamicFilePathField(models.FilePathField):
             super(DynamicFilePathField, self).deconstruct()
         if hasattr(self, "pathfunc"):
             kwargs['path'] = self.pathfunc
+        if hasattr(self, "matchfunc"):
+            kwargs['match'] = self.matchfunc
         return name, path, args, kwargs
 
     def formfield(self, **kwargs):
