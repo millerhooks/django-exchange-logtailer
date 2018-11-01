@@ -14,7 +14,6 @@ class LogFile(models.Model):
         max_length=500,
         blank=True,
     )
-    path = models.CharField(_('path'), max_length=500)
 
     def __unicode__(self):
         return '%s' % self.name
