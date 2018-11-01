@@ -7,17 +7,21 @@ from logtailer.utils import log_directory, log_file_extensions
 
 class LogFile(models.Model):
     name = models.CharField(_('name'), max_length=180)
-    path = DynamicFilePathField(
-        _('path'),
-        path=log_directory,
-        match=log_file_extensions,
-        max_length=500,
-        blank=True,
-    )
+    # path = DynamicFilePathField(
+    #     _('path'),
+    #     path=log_directory,
+    #     match=log_file_extensions,
+    #     max_length=500,
+    #     blank=True,
+    # )
+    path = models.CharField(_('path'), max_length=500)
 
     def __unicode__(self):
         return '%s' % self.name
-    
+
+    def __str__(self):
+        self.__unicode__()
+
     class Meta:
         verbose_name = _('Log file')
         verbose_name_plural = _('Log files')
@@ -29,6 +33,9 @@ class Filter(models.Model):
     
     def __unicode__(self):
         return '%s | %s: %s ' % (self.name, _('pattern'), self.regex)
+
+    def __str__(self):
+        self.__unicode__()
     
     class Meta:
         verbose_name = _('filter')
@@ -43,6 +50,9 @@ class LogsClipboard(models.Model):
     
     def __unicode__(self):
         return "%s" % self.name
+
+    def __str__(self):
+        self.__unicode__()
     
     class Meta:
         verbose_name = _('logs clipboard')
