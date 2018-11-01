@@ -20,8 +20,10 @@ class LogFile(models.Model):
         return '%s' % self.name
 
     def __str__(self):
-        j
-        return str(self.__unicode__())
+        if self.name:
+            return self.name
+        else:
+            return "Logfile Object"
 
     class Meta:
         verbose_name = _('Log file')
@@ -36,7 +38,10 @@ class Filter(models.Model):
         return '%s | %s: %s ' % (self.name, _('pattern'), self.regex)
 
     def __str__(self):
-        return str(self.__unicode__())
+        if self.name:
+            return self.name
+        else:
+            return "Filter Object"
 
     class Meta:
         verbose_name = _('filter')
@@ -53,7 +58,10 @@ class LogsClipboard(models.Model):
         return "%s" % self.name
 
     def __str__(self):
-        return str(self.__unicode__())
+        if self.name:
+            return self.name
+        else:
+            return "LogsClipboard Object"
 
     class Meta:
         verbose_name = _('logs clipboard')
